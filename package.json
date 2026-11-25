@@ -1,0 +1,19 @@
+{
+  "name": "meeting",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A secure real-time meeting and collaboration starter",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "optionalDependencies": {
+    "socket.io": "^4.8.1"
+  },
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "nodemailer": "^10.6.1"
+  }
+}

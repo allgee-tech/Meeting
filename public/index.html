@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7fcff">
+  <meta name="description" content="A calm, secure space for your team to meet and make progress together.">
+  <title>Meeting — Meet with more clarity</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/overrides.css">
+</head>
+<body>
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <main id="auth-view" class="auth-shell" hidden>
+    <section class="auth-art" aria-label="Meeting introduction">
+      <video class="auth-art-video" autoplay muted loop playsinline aria-hidden="true">
+        <source src="/assets/landing-background.mp4" type="video/mp4">
+      </video>
+      <a class="brand brand-on-dark" href="#" aria-label="Meeting home">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span>meeting</span>
+      </a>
+      <div class="auth-art-content">
+        <div class="eyebrow eyebrow-light"><span class="eyebrow-dot"></span> A BETTER WAY TO BE TOGETHER</div>
+        <h1>Good work<br>happens <em>here.</em></h1>
+        <p>Clear conversations. Shared ideas. One space to move work forward.</p>
+        <div class="art-call-card art-photo-card">
+          <img src="/assets/meeting-gallery.png" alt="Colleagues joining a real video meeting">
+        </div>
+      </div>
+      <div class="auth-art-footer"><span>Made for the moments that matter.</span><span>01 / 03</span></div>
+      <div class="auth-orb auth-orb-one"></div><div class="auth-orb auth-orb-two"></div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-panel-top"><span id="auth-top-label">Already have an account?</span><button class="text-button" id="auth-mode-toggle" type="button">Sign in</button><button class="theme-toggle" type="button" aria-label="Switch to night mode" title="Switch to night mode" aria-pressed="false"><span class="theme-toggle-icon" aria-hidden="true">☾</span><span class="theme-toggle-label">Night mode</span></button></div>
+      <div class="auth-card-wrap">
+        <div class="auth-heading">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> YOUR SPACE IS READY</div>
+          <h2 id="auth-title">Create your account</h2>
+          <p id="auth-subtitle">Start making room for better conversations.</p>
+        </div>
+        <p id="auth-status" class="auth-status" role="status" hidden></p>
+        <div class="auth-divider"><span></span><small>CONTINUE WITH EMAIL</small><span></span></div>
+        <form id="auth-form" novalidate>
+          <label class="field" id="name-field"><span>Your name</span><input name="name" autocomplete="name" placeholder="e.g. Alex Morgan" minlength="2"></label>
+          <label class="field" id="email-field"><span>Email address</span><input name="email" type="email" autocomplete="email" placeholder="you@company.com" required></label>
+          <label class="field" id="password-field"><span>Password</span><div class="password-wrap"><input name="password" type="password" autocomplete="new-password" placeholder="At least 10 characters" required minlength="10"><button type="button" class="password-toggle" aria-label="Show password">Show</button></div></label>
+          <label class="field" id="confirm-password-field" hidden><span>Confirm new password</span><input name="confirmPassword" type="password" autocomplete="new-password" placeholder="Enter the new password again" minlength="10"></label>
+          <div class="auth-error" id="auth-error" role="alert"></div>
+          <button class="button button-primary auth-submit" type="submit"><span id="auth-submit-label">Create account</span><span class="button-arrow">↗</span></button>
+        </form>
+        <p class="auth-help" id="auth-help" hidden><button type="button" id="forgot-password-link">Forgot password?</button><span>·</span><button type="button" id="resend-verification-link">Resend verification email</button></p>
+        <div class="auth-divider guest-divider"><span></span><small>OR JOIN A MEETING</small><span></span></div>
+        <form id="guest-join-form" class="guest-join-card" novalidate>
+          <div><strong>Join without an account</strong><small>Enter the name and meeting code shared with you.</small></div>
+          <label class="field"><span>Your name</span><input id="guest-name" autocomplete="name" placeholder="e.g. Alex Morgan" minlength="2" required></label>
+          <label class="field"><span>Meeting code</span><input id="guest-room-code" autocomplete="off" placeholder="12-character room code" maxlength="12" autocapitalize="characters" required></label>
+          <div class="auth-error" id="guest-error" role="alert"></div>
+          <button class="button button-quiet guest-submit" type="submit">Join meeting as guest <span class="button-arrow">↗</span></button>
+        </form>
+        <p class="auth-legal">By continuing, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+      </div>
+      <div class="auth-panel-footer"><span>© 2026 Meeting</span><span class="secure-note"><span class="mini-lock">⌑</span> Secure, private meetings</span></div>
+    </section>
+  </main>
+
+  <div id="app-view" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div class="sidebar-brand-row">
+        <a class="brand" href="#" aria-label="Meeting home"><span class="brand-mark"><span></span><span></span><span></span></span><span>meeting</span></a>
+        <button class="workspace-switch" id="workspace-info" aria-label="Workspace information">⌄</button>
+      </div>
+      <div class="workspace-card"><span class="workspace-avatar">S</span><span class="workspace-copy"><strong>Studio North</strong><small>Free workspace</small></span><span class="workspace-more">···</span></div>
+      <button id="new-meeting" class="new-meeting-button"><span class="plus-icon">＋</span> New meeting <kbd>⌘ K</kbd></button>
+      <nav class="side-nav" aria-label="Main navigation">
+        <div class="nav-label">WORKSPACE</div>
+        <button class="nav-item active" data-view="home"><span class="nav-icon">⌂</span> Home <span class="nav-trailing"></span></button>
+        <button class="nav-item" data-view="meetings"><span class="nav-icon">◷</span> Meetings <span class="nav-count" id="room-count">0</span></button>
+        <button class="nav-item" data-view="files"><span class="nav-icon">▧</span> Shared files</button>
+        <button class="nav-item" data-view="whiteboards"><span class="nav-icon">▱</span> Whiteboards</button>
+        <button class="nav-item" id="admin-nav" data-view="admin" hidden><span class="nav-icon">⚙</span> Admin dashboard</button>
+        <div class="nav-label nav-label-spaced">YOUR ROOMS <button id="add-room" aria-label="Add room">＋</button></div>
+        <div id="workspace-room-links" class="workspace-room-links"><small class="nav-room-empty">Your rooms appear here</small></div>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-security"><span class="security-icon">⌑</span><span><strong>Private by design</strong><small>Encrypted peer-to-peer calls</small></span><span class="security-check">✓</span></div>
+      <button class="profile-button" id="profile-menu"><span class="avatar avatar-mint" id="profile-avatar">AM</span><span class="profile-name"><strong id="profile-name">Alex Morgan</strong><small>Personal workspace</small></span><span class="profile-dots">···</span></button>
+    </aside>
+
+    <section class="app-main">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Studio North</span><span class="breadcrumb-slash">/</span><strong id="breadcrumb-page">Home</strong></div>
+        <div class="topbar-actions"><button class="icon-button help-button" id="help-button" aria-label="Help">?</button><button class="theme-toggle" type="button" aria-label="Switch to night mode" title="Switch to night mode" aria-pressed="false"><span class="theme-toggle-icon" aria-hidden="true">☾</span><span class="theme-toggle-label">Night mode</span></button><button class="topbar-invite" id="invite-teammate"><span>＋</span> Invite teammate</button><button class="avatar avatar-lilac topbar-avatar" id="topbar-avatar">AM</button></div>
+      </header>
+
+      <main id="home-page" class="home-page page-content">
+        <div class="home-intro"><div><div class="eyebrow"><span class="eyebrow-dot"></span> <span id="home-date">TODAY</span></div><h1>Good morning, <span id="greeting-name">Alex</span><span class="wave">✳</span></h1><p>Make space for the work that moves you forward.</p></div><button class="date-button" id="show-meetings">⌕ &nbsp; Room history <span>↗</span></button></div>
+        <section class="welcome-hero">
+          <div class="hero-grain"></div><div class="hero-copy"><div class="hero-kicker"><span class="hero-kicker-dot"></span> YOUR TEAM, IN GOOD COMPANY</div><h2>Big ideas need<br>a little <em>room.</em></h2><p>Start a quick call or bring everyone into the same room.</p><div class="hero-actions"><button id="hero-start" class="button button-light"><span class="button-play">▶</span> Start an instant meeting <span class="button-arrow">↗</span></button><button id="hero-join" class="button button-ghost">Join with a code <span>→</span></button></div></div>
+          <div class="hero-art hero-image-art"><img class="hero-meeting-photo" src="/assets/meeting-gallery.png" alt="Colleagues in a real video meeting"></div><div class="hero-bottom"><span>Make every conversation count.</span><span class="hero-pager"><i class="active"></i><i></i><i></i></span></div>
+        </section>
+        <div class="home-columns">
+          <section class="panel upcoming-panel"><div class="section-heading"><div><span class="eyebrow">RECENT ROOMS</span><h3>Your meetings</h3></div><button class="link-button" id="view-all-meetings">View all <span>→</span></button></div><div id="home-room-list" class="home-room-list"><div class="secondary-empty"><strong>Loading your rooms…</strong><p>Your meeting history will appear here.</p></div></div></section>
+          <aside class="home-side-column">
+            <section class="panel quick-start-panel"><div class="section-heading"><div><span class="eyebrow">QUICK START</span><h3>Jump right in</h3></div><span class="quick-spark">✳</span></div><button class="quick-action" id="quick-new"><span class="quick-icon quick-icon-green">◉</span><span><strong>Start a meeting</strong><small>Open a room instantly</small></span><b>↗</b></button><button class="quick-action" id="quick-join"><span class="quick-icon quick-icon-peach">⌕</span><span><strong>Join a meeting</strong><small>Enter a meeting code</small></span><b>↗</b></button><button class="quick-action" id="quick-board"><span class="quick-icon quick-icon-lilac">▤</span><span><strong>Open a whiteboard</strong><small>Make the idea visible</small></span><b>↗</b></button></section>
+            <section class="panel tip-panel"><div class="tip-badge">✧</div><div><span class="eyebrow">A SMALL REMINDER</span><p>Great meetings leave room for <em>everyone's</em> voice.</p><span class="tip-link">Learn about inclusive calls <b>↗</b></span></div><span class="tip-decoration">“</span></section>
+          </aside>
+        </div>
+        <footer class="home-footer"><span>Designed for togetherness.</span><span id="service-status-wrap"><i id="service-status-dot"></i> <span id="service-status">Checking workspace</span> <b>·</b> <button id="security-details">Your privacy matters</button></span></footer>
+      </main>
+
+      <section id="meeting-page" class="meeting-page" hidden>
+        <div class="meeting-toolbar"><div class="meeting-title-block"><button class="back-home" id="back-home" aria-label="Back to home">←</button><div><div class="meeting-name-row"><h1 id="meeting-name">Creative sync</h1><span class="recording-dot"></span></div><span class="meeting-subtitle"><span class="meeting-code" id="meeting-code">ROOM · —</span><i></i><span id="meeting-clock">00:00</span></span></div></div><div class="meeting-toolbar-right"><button class="secure-pill" id="meeting-security"><span>⌑</span> Encrypted <b>✓</b></button><button class="topbar-invite" id="meeting-invite"><span>＋</span> Invite</button><button class="icon-button" id="copy-room-code-shortcut" aria-label="Copy room code">···</button></div></div>
+        <div class="meeting-layout">
+          <div class="stage-column">
+            <div class="stage-area" id="stage-area"><div class="stage-grid" id="stage-grid"><div class="video-tile local-tile" id="local-tile"><video id="local-video" autoplay playsinline muted></video><div class="tile-placeholder" id="local-placeholder"><span class="tile-person tile-person-self"></span><span class="tile-initials" id="local-initials">AM</span></div><div class="tile-label"><span class="mic-status" id="local-mic-status">♫</span><span id="local-label">You</span><span class="tile-speaking-dot"></span></div><span class="tile-self-tag">YOU</span></div></div>
+              <div class="stage-empty" id="stage-empty"><span class="empty-illustration"><i></i><b></b><em></em></span><strong>You're the first one here</strong><p>Invite your team and make this room a little less quiet.</p><button class="button button-white-outline" id="empty-invite">Copy invite link <span>↗</span></button></div>
+              <div class="stage-top-label"><span class="stage-live"><i></i> LIVE</span><span id="participant-count">1 person</span></div><div class="stage-quality" id="connection-status"><i></i><span>Waiting for teammates</span></div>
+            </div>
+            <div class="meeting-controls"><div class="controls-group controls-left"><button class="control-button control-standard active" id="toggle-mic"><span class="control-symbol">♫</span><small>Mute</small></button><button class="control-button control-standard active" id="toggle-camera"><span class="control-symbol">▣</span><small>Stop video</small></button><button class="control-button control-standard" id="share-screen"><span class="control-symbol">▱</span><small>Share screen</small></button></div><div class="controls-group controls-center"><button class="control-button control-standard" id="open-whiteboard"><span class="control-symbol">▤</span><small>Whiteboard</small></button><button class="control-button control-standard" id="toggle-chat"><span class="control-symbol">▱</span><small>Chat</small><i class="control-dot" id="chat-dot" hidden></i></button><button class="control-button control-standard" id="toggle-participants"><span class="control-symbol">♧</span><small>People</small></button></div><div class="controls-group controls-right"><button class="leave-button" id="leave-meeting"><span>☎</span> Leave</button></div></div>
+            <div class="stage-footnote"><span><i></i> Your connection is private</span><span>Powered by peer-to-peer WebRTC</span></div>
+          </div>
+          <aside class="meeting-aside" id="meeting-aside"><div class="aside-tabs"><button class="aside-tab active" data-tab="chat">Chat <i id="chat-tab-dot" hidden></i></button><button class="aside-tab" data-tab="people">People <span id="people-tab-count">1</span></button><button class="aside-close" id="close-aside" aria-label="Close panel">×</button></div>
+            <section id="chat-panel" class="aside-panel chat-panel"><div class="chat-heading"><div><span class="eyebrow">ROOM CONVERSATION</span><h3>Say hello</h3></div><button class="chat-more" id="chat-invite" aria-label="Invite someone to this room">···</button></div><div class="chat-messages" id="chat-messages"><div class="chat-welcome"><span class="chat-welcome-icon">✳</span><strong>This is the start of something.</strong><p>Messages here are shared with everyone in the room.</p></div></div><div class="chat-compose"><button class="attach-button" id="attach-file" aria-label="Share a file">＋</button><input id="chat-input" type="text" placeholder="Send a message..." maxlength="1000" aria-label="Message"><button class="send-button" id="send-message" aria-label="Send message">↑</button><input id="file-input" type="file" hidden></div><div class="chat-encryption"><span>⌑</span> Messages are encrypted in transit</div></section>
+            <section id="people-panel" class="aside-panel people-panel" hidden><div class="chat-heading"><div><span class="eyebrow">IN THIS ROOM</span><h3>People <span id="people-heading-count">1</span></h3></div><button class="add-person" id="people-invite">＋</button></div><div class="people-list" id="people-list"></div><div class="people-panel-footer"><span class="people-lock">⌑</span><span>Anyone with the room link or code can join.</span></div></section>
+          </aside>
+        </div>
+      </section>
+
+      <section id="secondary-page" class="secondary-page page-content" hidden><div class="secondary-heading"><div class="eyebrow"><span class="eyebrow-dot"></span> STUDIO NORTH</div><h1 id="secondary-title">Meetings</h1><p id="secondary-description">A calm place to find your conversations and shared work.</p></div><div id="secondary-content" class="secondary-content"></div></section>
+    </section>
+  </div>
+
+  <div id="modal-backdrop" class="modal-backdrop" hidden>
+    <section id="help-modal" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden><button class="modal-close" data-close-modal aria-label="Close">×</button><span class="modal-icon">?</span><div class="eyebrow">MEETING QUICK HELP</div><h2 id="help-title">Make the room work for you</h2><p>Use an invite link or room code to bring teammates into your call.</p><div class="security-list"><div><span>1</span><section><strong>Start or join a room</strong><small>Create a room, or enter the code someone shared with you. Guests can join with a room link or code without creating an account.</small></section></div><div><span>2</span><section><strong>Turn on your devices</strong><small>Allow camera and microphone access. Screen sharing needs HTTPS or localhost.</small></section></div><div><span>3</span><section><strong>Share as you talk</strong><small>Use the meeting controls for chat, files, participants, screen sharing and the shared whiteboard.</small></section></div></div><button class="button button-primary modal-submit" id="help-privacy">Privacy and security <span class="button-arrow">↗</span></button></section>    <section id="meeting-modal" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden><button class="modal-close" data-close-modal aria-label="Close">×</button><span class="modal-icon">◉</span><div class="eyebrow">ROOM FOR GOOD IDEAS</div><h2 id="modal-title">Start a meeting</h2><p id="modal-copy">Give this room a name and invite your people in.</p><form id="meeting-form"><label class="field"><span>Meeting name</span><input id="room-name-input" value="Quick team sync" maxlength="80" required></label><div class="auth-error" id="meeting-error"></div><button class="button button-primary modal-submit" type="submit">Create room <span class="button-arrow">↗</span></button></form></section>
+    <section id="join-modal" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="join-title" hidden><button class="modal-close" data-close-modal aria-label="Close">×</button><span class="modal-icon modal-icon-peach">⌕</span><div class="eyebrow">COME ON IN</div><h2 id="join-title">Join a meeting</h2><p>Enter the room code your teammate shared with you.</p><form id="join-form"><label class="field"><span>Meeting code</span><input id="room-code-input" placeholder="e.g. 8F2AC90B14DE" maxlength="12" autocapitalize="characters" required></label><div class="auth-error" id="join-error"></div><button class="button button-primary modal-submit" type="submit">Join room <span class="button-arrow">↗</span></button></form></section>
+    <section id="invite-modal" class="modal-card invite-modal-card" role="dialog" aria-modal="true" aria-labelledby="invite-title" hidden><button class="modal-close" data-close-modal aria-label="Close">×</button><span class="modal-icon modal-icon-green">↗</span><div class="eyebrow">GOOD THINGS ARE BETTER SHARED</div><h2 id="invite-title">Bring someone in</h2><p>Send this link to anyone you'd like to meet with.</p><div class="invite-link-row"><input id="invite-link-input" readonly aria-label="Meeting invite link"><button class="button button-primary" id="copy-invite">Copy link</button></div><div class="invite-code-row"><span>ROOM CODE</span><strong id="invite-room-code">—</strong><button id="copy-code">Copy code</button></div></section>
+    <section id="security-modal" class="modal-card security-modal-card" role="dialog" aria-modal="true" aria-labelledby="security-title" hidden><button class="modal-close" data-close-modal aria-label="Close">×</button><span class="modal-icon modal-icon-green">⌑</span><div class="eyebrow">YOUR PRIVACY MATTERS</div><h2 id="security-title">Private by design</h2><p>Calls and shared content travel directly between participants over encrypted WebRTC connections.</p><div class="security-list"><div><span>✓</span><section><strong>Encrypted media</strong><small>DTLS-SRTP protects audio and video.</small></section></div><div><span>✓</span><section><strong>Encrypted collaboration</strong><small>WebRTC data channels protect chat, files and whiteboard strokes.</small></section></div><div><span>✓</span><section><strong>Protected sign-in</strong><small>Passwords are hashed with scrypt; sessions use HttpOnly cookies.</small></section></div></div><p class="security-footnote">For deployment, serve Meeting over HTTPS and configure a TURN relay for networks that block peer-to-peer connections.</p></section>
+    <section id="profile-modal" class="modal-card profile-modal-card" role="dialog" aria-modal="true" aria-labelledby="profile-title" hidden><button class="modal-close" data-close-modal aria-label="Close">×</button><span class="modal-icon modal-icon-lilac">☻</span><div class="eyebrow">YOUR ACCOUNT</div><h2 id="profile-title">A little about you</h2><p id="profile-email">Securely signed in.</p><button class="button button-quiet modal-submit" id="sign-out">Sign out <span>↗</span></button></section>
+  </div>
+
+  <section id="whiteboard-modal" class="whiteboard-modal" hidden aria-label="Shared whiteboard"><header class="whiteboard-header"><div class="whiteboard-title"><span class="board-icon">▤</span><div><strong>Room whiteboard</strong><small>Ideas take shape together</small></div></div><div class="whiteboard-tools"><span class="board-live"><i></i> SHARED LIVE</span><button class="board-tool active" id="board-pen" title="Pen">✎</button><button class="board-tool" id="board-erase" title="Eraser">◩</button><button class="board-tool" id="board-clear" title="Clear board">⌫</button><span class="board-tool-divider"></span><button class="board-close" id="close-whiteboard" aria-label="Close whiteboard">×</button></div></header><div class="board-workspace"><div class="board-side-note"><span class="eyebrow">A SHARED SPACE</span><h2>Think out<br><em>loud.</em></h2><p>Sketch a thought, map a flow, or leave a little note for the team.</p><div class="board-hint"><span>⌁</span> Everyone in the room can draw here</div></div><div class="board-canvas-wrap"><div class="board-canvas-paper"><canvas id="whiteboard-canvas"></canvas><div class="canvas-watermark">STUDIO NORTH&nbsp; · &nbsp;ROOM NOTES</div></div></div></div></section>
+
+  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/app.js" defer></script>
+</body>
+</html>
