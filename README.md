@@ -54,7 +54,7 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 
 - `PORT` — HTTP port; Railway supplies this in production and the local default is `3000`.
 - `SESSION_SECRET` — stable random secret for signed sessions.
-- `ADMIN_EMAIL` — optional comma-separated email allowlist for additional admin-dashboard access. `deiyeshua05@gmail.com` is always an admin. Accounts must be verified.
+- `ADMIN_EMAIL` — optional comma-separated email allowlist for additional admin-dashboard access. `deiyeshua05@gmail.com` and `deiyeshua@gmail.com` are always admins. Accounts must be verified.
 - `APP_BASE_URL` — public Meeting origin used in verification and password-reset links, such as `https://meet.example.com`. Required for production email delivery.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` — SMTP connection and sender settings. Port `465` uses TLS automatically.
 - `MEETING_DATA_DIR` — private persistent directory for the account, session, and room store; defaults to `.data` in the project folder.

@@ -18,7 +18,7 @@ const ROOM_RETENTION = 30 * 24 * 60 * 60 * 1000;
 const MAX_BODY = 1_000_000;
 const DATA_DIR = process.env.MEETING_DATA_DIR ? path.resolve(process.env.MEETING_DATA_DIR) : path.join(ROOT, '.data');
 const STORE_FILE = path.join(DATA_DIR, 'meeting.json');
-const ADMIN_EMAILS = new Set(['deiyeshua05@gmail.com', ...String(process.env.ADMIN_EMAIL || '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean)]);
+const ADMIN_EMAILS = new Set(['deiyeshua05@gmail.com', 'deiyeshua@gmail.com', ...String(process.env.ADMIN_EMAIL || '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean)]);
 const SMTP_HOST = String(process.env.SMTP_HOST || '').trim();
 const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
 const SMTP_FROM = String(process.env.SMTP_FROM || '').trim();
