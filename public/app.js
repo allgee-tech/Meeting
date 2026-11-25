@@ -215,21 +215,36 @@ function renderAdminDashboard(container) {
     <div class="admin-metrics" aria-label="Workspace metrics">
       <article class="admin-metric"><span>Total accounts</span><strong data-admin-metric="totalUsers">—</strong><small>Registered member accounts</small></article>
       <article class="admin-metric"><span>Active users</span><strong data-admin-metric="activeUsers">—</strong><small>Users with a current session</small></article>
+      <article class="admin-metric"><span>Pending verification</span><strong data-admin-metric="pendingVerifications">—</strong><small>Accounts awaiting email confirmation</small></article>
       <article class="admin-metric"><span>Meeting rooms</span><strong data-admin-metric="totalRooms">—</strong><small>Saved room history</small></article>
       <article class="admin-metric"><span>Live rooms</span><strong data-admin-metric="activeRooms">—</strong><small>Rooms with participants now</small></article>
       <article class="admin-metric"><span>Participants</span><strong data-admin-metric="liveParticipants">—</strong><small>Connected room members</small></article>
     </div>
     <div class="admin-toolbar"><p data-admin-error role="alert" hidden></p><span data-admin-updated>Loading workspace data…</span><button class="link-button" type="button" data-admin-refresh>Refresh data ↻</button></div>
     <section class="admin-card">
-      <div class="admin-card-heading"><div><span class="eyebrow">ACCESS OVERVIEW</span><h2>Accounts</h2></div><span class="admin-count" data-admin-user-count>—</span></div>
-      <div class="admin-table-wrap"><table><thead><tr><th>Account</th><th>Role</th><th>Joined</th><th>Sessions</th><th>Rooms</th></tr></thead><tbody data-admin-users><tr><td colspan="5">Loading accounts…</td></tr></tbody></table></div>
+      <div class="admin-card-heading"><div><span class="eyebrow">ACCESS OVERVIEW</span><h2>Accounts</h2></div><div class="admin-card-actions"><span class="admin-count" data-admin-user-count>—</span><button class="admin-export" type="button" data-admin-export-users>Export CSV</button></div></div>
+      <div class="admin-filters"><label class="admin-search"><span class="visually-hidden">Search accounts</span><input type="search" data-admin-account-search placeholder="Search name or email" autocomplete="off"></label><label class="admin-select-label"><span class="visually-hidden">Filter accounts</span><select data-admin-account-filter><option value="all">All accounts</option><option value="admin">Admins</option><option value="active">Active now</option><option value="pending">Needs verification</option></select></label></div>
+      <div class="admin-table-wrap"><table><thead><tr><th>Account</th><th>Role</th><th>Verification</th><th>Joined</th><th>Last sign-in</th><th>Sessions</th><th>Rooms</th></tr></thead><tbody data-admin-users><tr><td colspan="7">Loading accounts…</td></tr></tbody></table></div>
     </section>
     <section class="admin-card">
-      <div class="admin-card-heading"><div><span class="eyebrow">ROOM ACTIVITY</span><h2>Recent meetings</h2></div><span class="admin-count">Last 25</span></div>
+      <div class="admin-card-heading"><div><span class="eyebrow">ROOM ACTIVITY</span><h2>Recent meetings</h2></div><div class="admin-card-actions"><span class="admin-count">Latest 25</span><button class="admin-export" type="button" data-admin-export-rooms>Export CSV</button></div></div>
+      <div class="admin-filters"><label class="admin-search"><span class="visually-hidden">Search meeting rooms</span><input type="search" data-admin-room-search placeholder="Search room, code, or owner" autocomplete="off"></label><label class="admin-select-label"><span class="visually-hidden">Filter meeting rooms</span><select data-admin-room-filter><option value="all">All rooms</option><option value="live">Live now</option><option value="quiet">Quiet</option></select></label></div>
       <div class="admin-table-wrap"><table><thead><tr><th>Room</th><th>Owner</th><th>Created</th><th>Members</th><th>Status</th></tr></thead><tbody data-admin-rooms><tr><td colspan="5">Loading rooms…</td></tr></tbody></table></div>
     </section>`;
   container.append(dashboard);
   dashboard.querySelector('[data-admin-refresh]').addEventListener('click', () => loadAdminOverview(dashboard));
+  dashboard.querySelector('[data-admin-account-search]').addEventListener('input', () => renderAdminRows(dashboard, dashboard.adminOverview));
+  dashboard.querySelector('[data-admin-account-filter]').addEventListener('change', () => renderAdminRows(dashboard, dashboard.adminOverview));
+  dashboard.querySelector('[data-admin-room-search]').addEventListener('input', () => renderAdminRows(dashboard, dashboard.adminOverview));
+  dashboard.querySelector('[data-admin-room-filter]').addEventListener('change', () => renderAdminRows(dashboard, dashboard.adminOverview));
+  dashboard.querySelector('[data-admin-export-users]').addEventListener('click', () => {
+    const accounts = getFilteredAdminAccounts(dashboard);
+    downloadAdminCsv('meeting-accounts.csv', ['Name', 'Email', 'Role', 'Verification', 'Joined', 'Last sign-in', 'Active sessions', 'Rooms'], accounts.map((account) => [account.name, account.email, account.role, account.emailVerified ? 'Verified' : 'Pending', formatAdminDate(account.createdAt), formatAdminDate(account.lastLoginAt), account.activeSessions, account.roomCount]));
+  });
+  dashboard.querySelector('[data-admin-export-rooms]').addEventListener('click', () => {
+    const rooms = getFilteredAdminRooms(dashboard);
+    downloadAdminCsv('meeting-recent-rooms.csv', ['Room', 'Code', 'Owner', 'Created', 'Members', 'Active participants'], rooms.map((room) => [room.name, room.id, room.owner, formatAdminDate(room.createdAt), room.memberCount, room.activeParticipants]));
+  });
   loadAdminOverview(dashboard);
 }
 
@@ -246,18 +261,63 @@ function appendAdminCell(row, value) {
   return cell;
 }
 
+function getFilteredAdminAccounts(dashboard) {
+  const query = dashboard.querySelector('[data-admin-account-search]').value.trim().toLocaleLowerCase();
+  const filter = dashboard.querySelector('[data-admin-account-filter]').value;
+  return (dashboard.adminOverview?.users || []).filter((account) => {
+    const matchesQuery = !query || `${account.name || ''} ${account.email || ''}`.toLocaleLowerCase().includes(query);
+    const matchesFilter = filter === 'admin' ? account.role === 'admin'
+      : filter === 'active' ? account.activeSessions > 0
+        : filter === 'pending' ? !account.emailVerified
+          : true;
+    return matchesQuery && matchesFilter;
+  });
+}
+
+function getFilteredAdminRooms(dashboard) {
+  const query = dashboard.querySelector('[data-admin-room-search]').value.trim().toLocaleLowerCase();
+  const filter = dashboard.querySelector('[data-admin-room-filter]').value;
+  return (dashboard.adminOverview?.rooms || []).filter((room) => {
+    const matchesQuery = !query || `${room.name || ''} ${room.id || ''} ${room.owner || ''}`.toLocaleLowerCase().includes(query);
+    const matchesFilter = filter === 'live' ? room.activeParticipants > 0
+      : filter === 'quiet' ? !room.activeParticipants
+        : true;
+    return matchesQuery && matchesFilter;
+  });
+}
+
+function downloadAdminCsv(filename, headers, rows) {
+  const csvCell = (value) => {
+    let text = String(value ?? '');
+    if (/^[\t\r ]*[=+\-@]/.test(text)) text = `'${text}`;
+    return `"${text.replaceAll('"', '""')}"`;
+  };
+  const csv = [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
+  const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 function renderAdminRows(dashboard, data) {
+  if (!data) return;
+  dashboard.adminOverview = data;
   for (const [key, value] of Object.entries(data.metrics || {})) {
     const metric = dashboard.querySelector(`[data-admin-metric="${key}"]`);
     if (metric) metric.textContent = Number(value || 0).toLocaleString();
   }
   const userBody = dashboard.querySelector('[data-admin-users]');
   userBody.replaceChildren();
-  dashboard.querySelector('[data-admin-user-count]').textContent = `${(data.users || []).length} shown`;
-  if (!data.users?.length) {
-    const row = document.createElement('tr'); appendAdminCell(row, 'No accounts yet.').colSpan = 5; userBody.append(row);
+  const accounts = getFilteredAdminAccounts(dashboard);
+  dashboard.querySelector('[data-admin-user-count]').textContent = `${accounts.length} of ${(data.users || []).length}`;
+  if (!accounts.length) {
+    const row = document.createElement('tr'); appendAdminCell(row, data.users?.length ? 'No accounts match these filters.' : 'No accounts yet.').colSpan = 7; userBody.append(row);
   } else {
-    for (const account of data.users) {
+    for (const account of accounts) {
       const row = document.createElement('tr');
       const accountCell = document.createElement('td');
       accountCell.innerHTML = '<strong></strong><small></small>';
@@ -266,7 +326,13 @@ function renderAdminRows(dashboard, data) {
       row.append(accountCell);
       const roleCell = appendAdminCell(row, '');
       const roleBadge = document.createElement('span'); roleBadge.className = `admin-role ${account.role === 'admin' ? 'is-admin' : ''}`; roleBadge.textContent = account.role || 'member'; roleCell.append(roleBadge);
+      const verificationCell = appendAdminCell(row, '');
+      const verificationBadge = document.createElement('span');
+      verificationBadge.className = `admin-account-status ${account.emailVerified ? 'is-verified' : 'is-pending'}`;
+      verificationBadge.textContent = account.emailVerified ? 'Verified' : 'Pending';
+      verificationCell.append(verificationBadge);
       appendAdminCell(row, formatAdminDate(account.createdAt));
+      appendAdminCell(row, formatAdminDate(account.lastLoginAt));
       const sessionsCell = appendAdminCell(row, account.activeSessions ? `${account.activeSessions} active` : '—');
       if (account.activeSessions) sessionsCell.classList.add('admin-session-active');
       appendAdminCell(row, account.roomCount || 0);
@@ -276,10 +342,11 @@ function renderAdminRows(dashboard, data) {
 
   const roomBody = dashboard.querySelector('[data-admin-rooms]');
   roomBody.replaceChildren();
-  if (!data.rooms?.length) {
-    const row = document.createElement('tr'); appendAdminCell(row, 'No meeting rooms yet.').colSpan = 5; roomBody.append(row);
+  const rooms = getFilteredAdminRooms(dashboard);
+  if (!rooms.length) {
+    const row = document.createElement('tr'); appendAdminCell(row, data.rooms?.length ? 'No rooms match these filters.' : 'No meeting rooms yet.').colSpan = 5; roomBody.append(row);
   } else {
-    for (const room of data.rooms) {
+    for (const room of rooms) {
       const row = document.createElement('tr');
       const roomCell = document.createElement('td');
       roomCell.innerHTML = '<strong></strong><small></small>';
