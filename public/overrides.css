@@ -664,5 +664,18 @@ html[data-theme="dark"] .admin-count,html[data-theme="dark"] .admin-account-stat
 html[data-theme="dark"] .admin-account-status.is-pending{background:rgba(242,99,154,.2);color:#ffa4c4}
 html[data-theme="dark"] .admin-room-status.is-live,html[data-theme="dark"] .admin-session-active{color:#a8d5ff}
 html[data-theme="dark"] .admin-export{background:rgba(49,91,255,.14);border-color:rgba(168,197,255,.22)}
+
+/* Animated auth backdrop: soft, liquid light behind the sign-in card. */
+.auth-shell{position:relative;isolation:isolate;overflow:hidden;background:#edf8f6}
+.auth-shell:before,.auth-shell:after{content:"";position:absolute;z-index:0;pointer-events:none;border-radius:50%;filter:blur(4px);opacity:.7;will-change:transform}
+.auth-shell:before{width:52vw;height:52vw;left:-18vw;top:-22vw;background:radial-gradient(circle at 40% 40%,rgba(125,224,214,.72),rgba(125,224,214,0) 68%);animation:auth-orb-drift 18s ease-in-out infinite alternate}
+.auth-shell:after{width:46vw;height:46vw;right:-16vw;bottom:-20vw;background:radial-gradient(circle at 45% 45%,rgba(111,177,255,.38),rgba(111,177,255,0) 70%);animation:auth-orb-drift 23s ease-in-out -7s infinite alternate-reverse}
+.auth-panel{z-index:1;background:linear-gradient(130deg,rgba(250,255,254,.76),rgba(235,249,248,.62),rgba(247,250,255,.76));background-size:220% 220%;animation:auth-panel-glow 16s ease-in-out infinite}
+.auth-art{z-index:1}
+@media(prefers-reduced-motion:no-preference){
+  @keyframes auth-orb-drift{0%{transform:translate3d(-2%,0,0) scale(1)}50%{transform:translate3d(8%,8%,0) scale(1.08)}100%{transform:translate3d(-4%,14%,0) scale(.94)}}
+  @keyframes auth-panel-glow{0%,100%{background-position:0% 45%}50%{background-position:100% 55%}}
+}
+@media(prefers-reduced-motion:reduce){.auth-shell:before,.auth-shell:after,.auth-panel{animation:none}}
 html[data-theme="dark"] .toast{background:#315bff}
 html[data-theme="dark"] .toast.error{background:#a73768}
