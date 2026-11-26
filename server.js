@@ -463,7 +463,10 @@ async function handleApi(req, res, url) {
       const token = issueToken(user, 'emailVerification', 24 * 60 * 60 * 1000);
       persistStore();
       try { delivery = await sendVerificationEmail(user, token); }
-      catch (error) { console.error('Verification email could not be sent:', error.message); }
+      catch (error) {
+        console.error('Verification email could not be sent:', error.message);
+        return send(res, 503, { error: 'We could not deliver the verification email. Check the SMTP/Brevo settings and try again.' });
+      }
     }
     return send(res, 200, { ok: true, delivery, message: 'If the account needs verification, a new link has been sent.' });
   }

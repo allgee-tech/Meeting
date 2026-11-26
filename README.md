@@ -58,6 +58,7 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 - The admin dashboard is available from the sidebar after signing in, or directly at `/admin` (also `/admin/setup`). The direct link opens sign-in first when needed and requires an authorized admin account.
 - `APP_BASE_URL` — public Meeting origin used in verification and password-reset links, such as `https://meet.example.com`. Required for production email delivery.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` — SMTP connection and sender settings. Port `465` uses TLS automatically.
+- `BREVO_API_KEY` — optional alternative to SMTP. Set this together with `SMTP_FROM` to send through Brevo’s HTTPS API when SMTP ports are blocked.
 - `MEETING_DATA_DIR` — private persistent directory for the account, session, and room store; defaults to `.data` in the project folder.
 - `TURN_URLS` — optional comma-separated TURN server URLs.
 - `TURN_SHARED_SECRET` — server-side coturn REST secret. Static-provider credentials can use `TURN_USERNAME` and `TURN_CREDENTIAL` instead.
