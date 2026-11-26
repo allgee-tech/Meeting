@@ -61,7 +61,12 @@ function showAuth(mode = 'register') {
   setAuthMode(mode);
 }
 
-function showApp() {
+function pageFromPath() {
+  const route = location.pathname.replace(/\/+$/, '').toLowerCase();
+  return route === '/admin' || route === '/admin/setup' ? 'admin' : 'home';
+}
+
+function showApp(page = pageFromPath()) {
   $('#auth-view').hidden = true;
   $('#app-view').hidden = false;
   $('#profile-name').textContent = state.user.name;
@@ -70,7 +75,7 @@ function showApp() {
   $('#admin-nav').hidden = state.user.role !== 'admin';
   $('#greeting-name').textContent = state.user.name.split(' ')[0];
   $('#home-date').textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date()).toUpperCase();
-  renderPage('home');
+  renderPage(page);
   refreshWorkspaceRooms();
   refreshServiceHealth();
 }
@@ -161,6 +166,8 @@ function renderPage(page) {
   }
   leaveCurrentPage();
   state.currentPage = page;
+  const pagePath = page === 'admin' ? '/admin' : '/';
+  if (location.pathname !== pagePath) history.replaceState(null, '', pagePath);
   $('#home-page').hidden = page !== 'home';
   $('#meeting-page').hidden = page !== 'meeting';
   $('#secondary-page').hidden = page === 'home' || page === 'meeting';
@@ -1370,7 +1377,9 @@ async function init() {
     state.user = session.user; state.csrfToken = session.csrfToken; showApp();
     if (roomCode) { history.replaceState(null, '', '/'); await joinRoom(roomCode); }
   } catch {
-    showAuth();
+    const adminRoute = pageFromPath() === 'admin';
+    showAuth(adminRoute ? 'login' : 'register');
+    if (adminRoute) setAuthStatus('Sign in with an authorized admin account to open the dashboard.');
     if (roomCode) $('#guest-room-code').value = roomCode.toUpperCase();
   }
 }

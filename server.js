@@ -695,7 +695,9 @@ async function handleApi(req, res, url) {
 }
 
 function serveStatic(req, res, url) {
-  let relativePath = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+  const route = url.pathname.replace(/\/+$/, '').toLowerCase();
+  const isAdminPage = route === '/admin' || route === '/admin/setup';
+  let relativePath = decodeURIComponent(url.pathname === '/' || isAdminPage ? '/index.html' : url.pathname);
   if (relativePath.includes('..')) return send(res, 400, 'Invalid path.');
   const filePath = path.join(PUBLIC_DIR, relativePath.replace(/^[/\\]+/, ''));
   if (!filePath.startsWith(PUBLIC_DIR)) return send(res, 403, 'Forbidden.');
