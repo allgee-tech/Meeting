@@ -24,7 +24,7 @@ const SMTP_PORT = Number(process.env.SMTP_PORT || 587);
 const SMTP_FROM = String(process.env.SMTP_FROM || '').trim();
 const APP_BASE_URL = String(process.env.APP_BASE_URL || (process.env.NODE_ENV === 'production' ? '' : `http://localhost:${PORT}`)).trim().replace(/\/+$/, '');
 const TRUST_PROXY = String(process.env.TRUST_PROXY || '').toLowerCase() === 'true';
-const DEV_EMAIL_LOG = (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') && ((!SMTP_HOST && !process.env.BREVO_API_KEY) || !SMTP_FROM);
+const DEV_EMAIL_LOG = (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') && ((!SMTP_HOST && !process.env.BREVO_API_KEY && !process.env.RESEND_API_KEY) || !SMTP_FROM);
 if (!Number.isInteger(SMTP_PORT) || SMTP_PORT < 1 || SMTP_PORT > 65535) throw new Error('SMTP_PORT must be a valid TCP port.');
 if (Boolean(process.env.SMTP_USER) !== Boolean(process.env.SMTP_PASS)) throw new Error('Set both SMTP_USER and SMTP_PASS, or leave both blank.');
 const BREVO_API_KEY = String(process.env.BREVO_API_KEY || '').trim();
@@ -42,7 +42,20 @@ const brevoTransport = {
     if (!response.ok) throw new Error(`Brevo API ${response.status}: ${(await response.text()).slice(0, 200)}`);
   },
 };
-const emailTransport = BREVO_API_KEY && SMTP_FROM ? brevoTransport : SMTP_HOST && SMTP_FROM ? nodemailer.createTransport({
+const RESEND_API_KEY = String(process.env.RESEND_API_KEY || '').trim();
+// Resend's HTTPS API has no IP allowlist, so it works from Railway's changing outbound IPs.
+const resendTransport = {
+  async sendMail({ from, to, subject, text, html }) {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${RESEND_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, text, html }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!response.ok) throw new Error(`Resend API ${response.status}: ${(await response.text()).slice(0, 200)}`);
+  },
+};
+const emailTransport = RESEND_API_KEY && SMTP_FROM ? resendTransport : BREVO_API_KEY && SMTP_FROM ? brevoTransport : SMTP_HOST && SMTP_FROM ? nodemailer.createTransport({
   host: SMTP_HOST,
   port: SMTP_PORT,
   secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || SMTP_PORT === 465,
@@ -325,7 +338,7 @@ async function sendAccountEmail({ to, subject, title, intro, actionLabel, action
     text: `${title}\n\n${intro}\n\n${actionLabel}: ${actionUrl}\n\n${footer}`,
     html: `<main style="font-family:Arial,sans-serif;max-width:540px;margin:40px auto;padding:32px;border:1px solid #dce8e9;border-radius:16px;color:#173c4d"><p style="color:#1882a2;font-weight:bold">MEETING</p><h1>${safeTitle}</h1><p>${safeIntro}</p><p style="margin:28px 0"><a href="${safeUrl}" style="background:#1686a5;color:#fff;padding:13px 20px;border-radius:9px;text-decoration:none">${safeAction}</a></p><p style="color:#627c86;font-size:13px">If the button does not work, copy this link into your browser:<br>${safeUrl}</p><p style="color:#627c86;font-size:13px">${safeFooter}</p></main>`,
   });
-  return BREVO_API_KEY ? 'brevo' : 'smtp';
+  return RESEND_API_KEY ? 'resend' : BREVO_API_KEY ? 'brevo' : 'smtp';
 }
 
 function emailDeliveryConfigured() {
