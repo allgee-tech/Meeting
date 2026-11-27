@@ -251,9 +251,12 @@ function requireCsrf(req, session) {
 }
 
 function pruneRoom(room) {
-  const cutoff = Date.now() - 25_000;
+  // Backgrounded tabs and mobile browsers can throttle the HTTP presence timer.
+  // Keep peers with a live Socket.IO connection and allow a longer fallback grace period.
+  const cutoff = Date.now() - 90_000;
   for (const [peerId, peer] of room.peers) {
-    if (peer.lastSeen < cutoff) {
+    const hasLiveSocket = Boolean(peer.socketId && socketServer?.sockets.sockets.has(peer.socketId));
+    if (peer.lastSeen < cutoff && !hasLiveSocket) {
       room.peers.delete(peerId);
       room.signals.delete(peerId);
     }
