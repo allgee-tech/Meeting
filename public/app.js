@@ -9,12 +9,12 @@ const state = {
   chatOpen: true, activeTab: 'chat', unread: false, screenSharing: false, boardDrawing: false,
   boardColor: '#456b4a', boardErase: false, boardStrokes: [], fileTransfers: new Map(),
 };
-let activeTheme = 'light';
+let activeTheme = 'dark';
 
 function setTheme(theme, persist = true) {
   activeTheme = theme === 'dark' ? 'dark' : 'light';
   document.documentElement.dataset.theme = activeTheme;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', activeTheme === 'dark' ? '#091c2a' : '#f7fcff');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', activeTheme === 'dark' ? '#0B1020' : '#f7fcff');
   const dark = activeTheme === 'dark';
   $$('.theme-toggle').forEach((button) => {
     const nextMode = dark ? 'day' : 'night';
@@ -30,8 +30,8 @@ function setTheme(theme, persist = true) {
 }
 
 function initTheme() {
-  let savedTheme = 'light';
-  try { savedTheme = localStorage.getItem('meeting-theme') || 'light'; } catch {}
+  let savedTheme = 'dark';
+  try { savedTheme = localStorage.getItem('meeting-theme') || 'dark'; } catch {}
   setTheme(savedTheme, false);
 }
 
@@ -175,9 +175,9 @@ function renderPage(page) {
   $('#secondary-page').classList.toggle('admin-view', page === 'admin');
   $$('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.view === page));
   if (page === 'meeting') $('#breadcrumb-page').textContent = 'In a meeting';
-  else if (page === 'home') $('#breadcrumb-page').textContent = 'Home';
+  else if (page === 'home') $('#breadcrumb-page').textContent = 'Dashboard';
   else {
-    const labels = { meetings: ['Meetings', 'The conversations that bring your team closer.'], files: ['Shared files', 'Everything your team has passed around, in one place.'], whiteboards: ['Whiteboards', 'A place to make the shape of an idea visible.'], admin: ['Admin dashboard', 'Workspace usage, accounts, and meeting activity.'] };
+    const labels = { meetings: ['Meetings', 'Rooms your teammates are in right now.'], history: ['History', 'Rooms you have started or joined.'], files: ['Files', 'Everything your team has shared in one place.'], whiteboards: ['Whiteboard', 'A shared space to shape ideas together.'], settings: ['Settings', 'Manage your account and appearance.'], admin: ['Admin dashboard', 'Workspace usage, accounts, and meeting activity.'] };
     const [title, description] = labels[page] || ['Home', ''];
     $('#breadcrumb-page').textContent = title;
     $('#secondary-title').textContent = title;
@@ -198,15 +198,19 @@ function renderSecondary(page) {
     renderAdminDashboard(root);
     return;
   }
+  if (page === 'settings') {
+    renderSettings(root);
+    return;
+  }
   const card = document.createElement('div');
   card.className = 'secondary-card';
-  if (page === 'meetings') {
+  if (page === 'meetings' || page === 'history') {
     const history = document.createElement('div');
     history.id = 'meeting-history';
-    history.append(makeEmptyState('Loading your rooms...', 'Your meeting history will appear here.'));
+    history.append(makeEmptyState('Loading your rooms…', 'Your meetings will appear here.'));
     card.append(history);
     root.append(card);
-    loadRoomHistory(history);
+    loadRoomHistory(history, { activeOnly: page === 'meetings' });
   } else if (page === 'files') {
     root.append(card);
     loadSharedFileLibrary(card);
@@ -214,6 +218,74 @@ function renderSecondary(page) {
     card.append(makeEmptyState('Give your ideas somewhere to land.', 'Open a shared board in any meeting and start sketching together.', 'Start a meeting and open the board', 'board'));
     root.append(card);
   }
+}
+
+function renderSettings(container) {
+  const grid = document.createElement('div');
+  grid.className = 'settings-grid';
+
+  const account = document.createElement('section');
+  account.className = 'settings-card';
+  const accountEyebrow = document.createElement('span');
+  accountEyebrow.className = 'eyebrow';
+  accountEyebrow.textContent = 'ACCOUNT';
+  const accountTitle = document.createElement('h2');
+  accountTitle.textContent = 'Your profile';
+  const accountDetails = document.createElement('div');
+  accountDetails.className = 'settings-account';
+  const avatar = document.createElement('span');
+  avatar.className = 'avatar avatar-mint settings-avatar';
+  avatar.textContent = state.user?.initials || 'ME';
+  const identity = document.createElement('div');
+  identity.className = 'settings-identity';
+  const name = document.createElement('strong');
+  name.textContent = state.user?.name || 'Meeting guest';
+  const email = document.createElement('small');
+  email.textContent = state.user?.guest ? 'Guest access · no account required' : (state.user?.email || '');
+  identity.append(name, email);
+  accountDetails.append(avatar, identity);
+  const signOutButton = document.createElement('button');
+  signOutButton.className = 'button button-quiet settings-signout';
+  signOutButton.type = 'button';
+  signOutButton.textContent = 'Sign out';
+  signOutButton.addEventListener('click', () => signOut());
+  account.append(accountEyebrow, accountTitle, accountDetails, signOutButton);
+
+  const appearance = document.createElement('section');
+  appearance.className = 'settings-card';
+  const appearanceEyebrow = document.createElement('span');
+  appearanceEyebrow.className = 'eyebrow';
+  appearanceEyebrow.textContent = 'PREFERENCES';
+  const appearanceTitle = document.createElement('h2');
+  appearanceTitle.textContent = 'Appearance';
+  const appearanceRow = document.createElement('div');
+  appearanceRow.className = 'settings-appearance-row';
+  const appearanceCopy = document.createElement('div');
+  appearanceCopy.className = 'settings-identity';
+  const appearanceLabel = document.createElement('strong');
+  appearanceLabel.textContent = 'Color theme';
+  const appearanceDescription = document.createElement('small');
+  appearanceDescription.textContent = 'Choose a comfortable look for your workspace.';
+  appearanceCopy.append(appearanceLabel, appearanceDescription);
+  const themeButton = document.createElement('button');
+  themeButton.className = 'theme-toggle settings-theme-toggle';
+  themeButton.type = 'button';
+  themeButton.setAttribute('aria-pressed', String(activeTheme === 'dark'));
+  themeButton.setAttribute('aria-label', `Switch to ${activeTheme === 'dark' ? 'day' : 'night'} mode`);
+  const themeIcon = document.createElement('span');
+  themeIcon.className = 'theme-toggle-icon';
+  themeIcon.setAttribute('aria-hidden', 'true');
+  themeIcon.textContent = activeTheme === 'dark' ? '☀' : '☾';
+  const themeLabel = document.createElement('span');
+  themeLabel.className = 'theme-toggle-label';
+  themeLabel.textContent = activeTheme === 'dark' ? 'Day mode' : 'Night mode';
+  themeButton.append(themeIcon, themeLabel);
+  themeButton.addEventListener('click', () => setTheme(activeTheme === 'dark' ? 'light' : 'dark'));
+  appearanceRow.append(appearanceCopy, themeButton);
+  appearance.append(appearanceEyebrow, appearanceTitle, appearanceRow);
+
+  grid.append(account, appearance);
+  container.append(grid);
 }
 
 function renderAdminDashboard(container) {
@@ -449,7 +521,8 @@ function createRoomCard(room, compact = false) {
 
 function renderWorkspaceRooms(rooms) {
   const roomCount = $('#room-count');
-  if (roomCount) { roomCount.textContent = String(rooms.length); roomCount.hidden = rooms.length === 0; }
+  const activeCount = rooms.filter((room) => Number(room.participantCount) > 0).length;
+  if (roomCount) { roomCount.textContent = String(activeCount); roomCount.hidden = activeCount === 0; }
   const list = $('#home-room-list');
   if (list) {
     list.replaceChildren();
@@ -474,10 +547,16 @@ function renderWorkspaceRooms(rooms) {
   });
 }
 
-function renderMeetingHistory(container, rooms) {
+function renderMeetingHistory(container, rooms, activeOnly = false) {
   container.replaceChildren();
-  if (!rooms.length) { container.append(makeEmptyState('No meeting rooms yet.', 'Create a room and share its link or code with your team.')); return; }
-  rooms.forEach((room) => container.append(createRoomCard(room, true)));
+  const visibleRooms = activeOnly ? rooms.filter((room) => Number(room.participantCount) > 0) : rooms;
+  if (!visibleRooms.length) {
+    container.append(activeOnly
+      ? makeEmptyState('No live meetings right now.', 'Start a new room or join with a meeting code.', 'Start a meeting', 'meeting')
+      : makeEmptyState('No meeting history yet.', 'Create a room and invite your team to start a conversation.'));
+    return;
+  }
+  visibleRooms.forEach((room) => container.append(createRoomCard(room, true)));
 }
 
 async function refreshWorkspaceRooms() {
@@ -493,8 +572,8 @@ async function refreshWorkspaceRooms() {
   }
 }
 
-async function loadRoomHistory(container) {
-  try { renderMeetingHistory(container, await fetchWorkspaceRooms()); }
+async function loadRoomHistory(container, { activeOnly = false } = {}) {
+  try { renderMeetingHistory(container, await fetchWorkspaceRooms(), activeOnly); }
   catch (error) { container.replaceChildren(makeEmptyState('Could not load meetings.', error.message, 'Retry', 'retryMeetings')); }
 }
 
@@ -1258,7 +1337,15 @@ function attachEvents() {
   $('#hero-start').addEventListener('click', () => openModal('meeting-modal'));
   $('#quick-new').addEventListener('click', () => openModal('meeting-modal'));
   $('#hero-join').addEventListener('click', () => openModal('join-modal'));
-  $('#quick-join').addEventListener('click', () => openModal('join-modal'));
+  $('#upcoming-start').addEventListener('click', () => openModal('meeting-modal'));
+  $('#dashboard-join-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const input = $('#dashboard-room-code');
+    const code = input.value.trim().toUpperCase();
+    if (!code) return;
+    input.value = '';
+    await joinRoom(code);
+  });
   $('#meeting-form').addEventListener('submit', async (event) => {
     event.preventDefault(); $('#meeting-error').textContent = '';
     const name = $('#room-name-input').value.trim() || 'Quick team sync'; closeModal(); await createAndJoinRoom(name);
@@ -1269,7 +1356,7 @@ function attachEvents() {
   });
   $('#quick-board').addEventListener('click', async () => { await createAndJoinRoom('Ideas workshop'); if (state.room) openWhiteboard(); });
   $$('.nav-item').forEach((item) => item.addEventListener('click', () => renderPage(item.dataset.view)));
-  $('#view-all-meetings').addEventListener('click', () => renderPage('meetings'));
+  $('#view-all-meetings').addEventListener('click', () => renderPage('history'));
   document.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
     const joinButton = target?.closest('[data-join-room-id]');
@@ -1277,7 +1364,7 @@ function attachEvents() {
     const action = target?.closest('[data-open-action]')?.dataset.openAction;
     if (action === 'board') createAndJoinRoom('Ideas workshop').then(() => { if (state.room) openWhiteboard(); });
     else if (action === 'retryRooms') refreshWorkspaceRooms();
-    else if (action === 'retryMeetings') loadRoomHistory($('#meeting-history'));
+    else if (action === 'retryMeetings') loadRoomHistory($('#meeting-history'), { activeOnly: state.currentPage === 'meetings' });
     else if (action === 'meeting') openModal('meeting-modal');
   });
   $('#add-room').addEventListener('click', () => openModal('meeting-modal'));
