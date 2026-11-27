@@ -26,18 +26,18 @@ Open <http://localhost:3000>. In development, verification and password-reset li
 
 The local JSON store and in-memory room signaling are intended for one server instance. Set `MEETING_DATA_DIR` to a persistent private volume when deploying; use a shared database and signaling service before scaling horizontally. WebRTC media and data channels use DTLS encryption. Serve the app over HTTPS in production, keep `SESSION_SECRET` private and stable, and configure a TURN relay for users behind restrictive networks. The included public STUN server does not replace TURN.
 
-Copy `.env.example` to `.env` for local configuration. For deployment, set SMTP credentials, the HTTPS app URL, and a random session secret in the hosting platform's environment settings. Production startup rejects missing email settings or a short session secret.
+Copy `.env.example` to `.env` for local configuration. For deployment, set either SMTP credentials or a Brevo API key, the HTTPS app URL, a persistent data directory, and a random session secret in the hosting platform's environment settings. Production startup rejects missing email or storage settings and a short session secret.
 
 ## Deploy on Railway
 
 1. Create a Railway project from this repository. Railway will use [railway.toml](./railway.toml) and the `npm start` script.
-2. Add a Railway Volume mounted at `/data`, then set `MEETING_DATA_DIR=/data` in the service variables. Without a volume, the local JSON store can be lost when the service is redeployed or moved to a new instance.
+2. Add a Railway Volume mounted at `/data`, then set `MEETING_DATA_DIR=/data` in the service variables. Production now refuses to start without this setting because the local JSON store can be lost when the service is redeployed or moved to a new instance. The environment variable must point to the mounted volume, not just a directory in the application image.
 3. Add these production variables:
 
    - `NODE_ENV=production`
    - `SESSION_SECRET` — a random value of at least 32 characters
    - `APP_BASE_URL` — the public HTTPS URL assigned by Railway or your custom domain
-   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, and `SMTP_FROM`
+   - `SMTP_FROM` and either `SMTP_HOST` with the provider's SMTP settings, or `BREVO_API_KEY`
    - `SMTP_USER` and `SMTP_PASS` when required by your SMTP provider
 
 Railway supplies `PORT`; do not hard-code it in the service settings. `ADMIN_EMAIL`, `TRUST_PROXY`, and TURN variables are optional. The configured health check is `/api/health`.
@@ -58,8 +58,8 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 - The admin dashboard is available from the sidebar after signing in, or directly at `/admin` (also `/admin/setup`). The direct link opens sign-in first when needed and requires an authorized admin account.
 - `APP_BASE_URL` — public Meeting origin used in verification and password-reset links, such as `https://meet.example.com`. Required for production email delivery.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` — SMTP connection and sender settings. Port `465` uses TLS automatically.
-- `BREVO_API_KEY` — optional alternative to SMTP. Set this together with `SMTP_FROM` to send through Brevo’s HTTPS API when SMTP ports are blocked.
-- `MEETING_DATA_DIR` — private persistent directory for the account, session, and room store; defaults to `.data` in the project folder.
+- `BREVO_API_KEY` — optional alternative to SMTP. Set this together with `SMTP_FROM` to send through Brevo’s HTTPS API when SMTP ports are blocked. The Brevo sender address must be verified in Brevo.
+- `MEETING_DATA_DIR` — directory for the account, session, and room store; defaults to `.data` locally and must point to persistent storage in production.
 - `TURN_URLS` — optional comma-separated TURN server URLs.
 - `TURN_SHARED_SECRET` — server-side coturn REST secret. Static-provider credentials can use `TURN_USERNAME` and `TURN_CREDENTIAL` instead.
 - `NODE_ENV=production` — enables secure cookies and production validation.

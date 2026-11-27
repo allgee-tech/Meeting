@@ -16,7 +16,8 @@ const SESSION_TTL = 12 * 60 * 60 * 1000;
 const GUEST_SESSION_TTL = 4 * 60 * 60 * 1000;
 const ROOM_RETENTION = 30 * 24 * 60 * 60 * 1000;
 const MAX_BODY = 1_000_000;
-const DATA_DIR = process.env.MEETING_DATA_DIR ? path.resolve(process.env.MEETING_DATA_DIR) : path.join(ROOT, '.data');
+const MEETING_DATA_DIR = String(process.env.MEETING_DATA_DIR || '').trim();
+const DATA_DIR = MEETING_DATA_DIR ? path.resolve(MEETING_DATA_DIR) : path.join(ROOT, '.data');
 const STORE_FILE = path.join(DATA_DIR, 'meeting.json');
 const ADMIN_EMAILS = new Set(['deiyeshua05@gmail.com', 'deiyeshua@gmail.com', ...String(process.env.ADMIN_EMAIL || '').split(',').map((value) => value.trim().toLowerCase()).filter(Boolean)]);
 const SMTP_HOST = String(process.env.SMTP_HOST || '').trim();
@@ -54,6 +55,9 @@ let socketServer = null;
 if (process.env.NODE_ENV === 'production' && String(process.env.SESSION_SECRET || '').length < 32) {
   throw new Error('Set SESSION_SECRET to a random value with at least 32 characters in production.');
 }
+if (process.env.NODE_ENV === 'production' && !MEETING_DATA_DIR) {
+  throw new Error('Production requires MEETING_DATA_DIR to point to persistent storage. On Railway, mount a Volume at /data and set MEETING_DATA_DIR=/data.');
+}
 if (APP_BASE_URL) {
   const baseUrl = new URL(APP_BASE_URL);
   if (!['http:', 'https:'].includes(baseUrl.protocol) || baseUrl.username || baseUrl.password) {
@@ -65,7 +69,7 @@ if (APP_BASE_URL) {
   }
 }
 if (process.env.NODE_ENV === 'production' && (!APP_BASE_URL || !emailTransport || !SMTP_FROM)) {
-  throw new Error('Production requires APP_BASE_URL, SMTP_HOST, and SMTP_FROM for account verification and password recovery.');
+  throw new Error('Production requires APP_BASE_URL, SMTP_FROM, and either SMTP_HOST or BREVO_API_KEY for account verification and password recovery.');
 }
 
 function readStore() {
@@ -311,7 +315,7 @@ async function sendAccountEmail({ to, subject, title, intro, actionLabel, action
     return 'console';
   }
   if (!emailDeliveryConfigured()) {
-    throw new Error('Email is not configured. Set SMTP_HOST, SMTP_FROM, and APP_BASE_URL.');
+    throw new Error('Email is not configured. Set APP_BASE_URL, SMTP_FROM, and either SMTP_HOST or BREVO_API_KEY.');
   }
   const safeTitle = escapeHtml(title);
   const safeIntro = escapeHtml(intro);
@@ -454,7 +458,7 @@ async function handleApi(req, res, url) {
   if (route === '/api/auth/resend-verification' && method === 'POST') {
     const retryAfter = rateLimit(req, 'resend-verification', 4, 60 * 60 * 1000);
     if (retryAfter) return send(res, 429, { error: 'Too many email requests. Please try again later.' }, { 'Retry-After': String(retryAfter) });
-    if (!emailDeliveryConfigured()) return send(res, 503, { error: 'Email delivery is not configured. Set SMTP_HOST, SMTP_FROM, and APP_BASE_URL.' });
+    if (!emailDeliveryConfigured()) return send(res, 503, { error: 'Email delivery is not configured. Set APP_BASE_URL, SMTP_FROM, and either SMTP_HOST or BREVO_API_KEY.' });
     const body = await readJson(req);
     const email = String(body.email || '').trim().toLowerCase().slice(0, 180);
     const user = users.get(email);
@@ -474,7 +478,7 @@ async function handleApi(req, res, url) {
   if (route === '/api/auth/forgot-password' && method === 'POST') {
     const retryAfter = rateLimit(req, 'forgot-password', 4, 60 * 60 * 1000);
     if (retryAfter) return send(res, 429, { error: 'Too many email requests. Please try again later.' }, { 'Retry-After': String(retryAfter) });
-    if (!emailDeliveryConfigured()) return send(res, 503, { error: 'Email delivery is not configured. Set SMTP_HOST, SMTP_FROM, and APP_BASE_URL.' });
+    if (!emailDeliveryConfigured()) return send(res, 503, { error: 'Email delivery is not configured. Set APP_BASE_URL, SMTP_FROM, and either SMTP_HOST or BREVO_API_KEY.' });
     const body = await readJson(req);
     const email = String(body.email || '').trim().toLowerCase().slice(0, 180);
     const user = users.get(email);

@@ -104,7 +104,7 @@ function setAuthMode(mode) {
   const subtitles = {
     register: 'Start making room for better conversations.',
     login: 'Sign in and pick up where you left off.',
-    forgot: 'Enter your account email and we will send a secure reset link.',
+    forgot: 'Reset links go to verified accounts. If you still need to verify your email, use the resend link below.',
     reset: 'Choose a new password for your Meeting account.',
   };
   $('#auth-title').textContent = titles[mode] || titles.login;
@@ -118,7 +118,8 @@ function setAuthMode(mode) {
   $('#email-field').hidden = reset;
   $('#password-field').hidden = forgot;
   $('#confirm-password-field').hidden = !reset;
-  $('#auth-help').hidden = !login;
+  $('#auth-help').hidden = !(login || forgot);
+  $('#forgot-password-link').hidden = !login;
   $('#guest-join-form').hidden = reset;
   $('.guest-divider').hidden = reset;
   $('#auth-form [name="name"]').required = register;
