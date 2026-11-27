@@ -666,7 +666,7 @@ async function syncPeers() {
     }
     for (const [peerId, connection] of state.connections) {
       if (!currentIds.has(peerId)) {
-        connection.close();
+        connection.pc.close();
         state.connections.delete(peerId);
         state.remotePeers.delete(peerId);
         $(`[data-peer-id="${CSS.escape(peerId)}"]`)?.remove();
@@ -826,7 +826,7 @@ function renderRemoteTile(peer, stream) {
 
 function removePeer(peerId) {
   const connection = state.connections.get(peerId);
-  connection?.close();
+  connection?.pc.close();
   state.connections.delete(peerId);
   state.remotePeers.delete(peerId);
   $(`[data-peer-id="${CSS.escape(peerId)}"]`)?.remove();
@@ -879,7 +879,7 @@ function teardownMeeting() {
   state.pollTimer = state.presenceTimer = state.clockTimer = null;
   if (state.room && state.peerId && state.socket?.connected) state.socket.emit('room:leave', { roomId: state.room.id, peerId: state.peerId });
   if (state.room && state.peerId) api(`/api/rooms/${state.room.id}/leave`, { method: 'POST', body: JSON.stringify({ peerId: state.peerId }) }).catch(() => {});
-  for (const connection of state.connections.values()) connection.close();
+  for (const connection of state.connections.values()) connection.pc.close();
   state.connections.clear(); state.remotePeers.clear();
   state.localStream?.getTracks().forEach((track) => track.stop()); state.localStream = null;
   state.screenStream?.getTracks().forEach((track) => track.stop()); state.screenStream = null;
